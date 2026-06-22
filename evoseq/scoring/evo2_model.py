@@ -11,10 +11,24 @@ def _import_evo2_class():
         from evo2 import Evo2
 
         return Evo2
-    except ImportError:
+    except ImportError as first_exc:
+        if getattr(first_exc, "name", None) not in {None, "evo2"}:
+            raise RuntimeError(
+                "Evo2 could not be imported because one of its runtime dependencies "
+                f"is missing: {first_exc.name}. In Colab, install the Evo2 runtime "
+                "dependencies before scoring, including torch, flash-attn, and evo2."
+            ) from first_exc
+
+    try:
         from evo2.models import Evo2
 
         return Evo2
+    except ImportError as second_exc:
+        raise RuntimeError(
+            "Evo2 is not installed or is not importable. Preprocessing does not need "
+            "Evo2, but scoring does. In Colab, install torch, flash-attn, and evo2 "
+            "before calling score_pairs_file or export_perbase_logprobs."
+        ) from second_exc
 
 
 def ensure_cuda_device(device="cuda:0", require_gpu=True, min_memory_gb=None):

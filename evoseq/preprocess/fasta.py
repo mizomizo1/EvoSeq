@@ -3,8 +3,9 @@ from Bio import SeqIO
 
 def read_fasta_as_dict(path):
     records = {}
-    for rec in SeqIO.parse(str(path), "fasta"):
-        records[rec.id] = str(rec.seq).upper()
+    with open(path) as handle:
+        for rec in SeqIO.parse(handle, "fasta"):
+            records[rec.id] = str(rec.seq).upper()
     return records
 
 

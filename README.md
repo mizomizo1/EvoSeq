@@ -21,6 +21,17 @@ For Evo2 scoring dependencies:
 pip install -e ".[evo2]"
 ```
 
+In Google Colab, Evo2 often needs a runtime-specific install. Use this before
+scoring:
+
+```bash
+pip uninstall -y torchvision
+pip install -q torch==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+pip install -q flash-attn==2.8.0.post2 --no-build-isolation
+pip install -q evo2
+pip install -e .
+```
+
 After a GitHub Release is tagged, users can install a specific version directly:
 
 ```bash
@@ -29,6 +40,18 @@ pip install "git+https://github.com/hideakimizoue/EvoSeq.git@v0.1.0"
 
 For Evo2 scoring in Colab, install Evo2 and GPU dependencies in the runtime that
 matches your model. The preprocessing step only needs the base dependencies.
+
+## Debug / Test
+
+Run the local workflow tests without Evo2, torch, or flash-attn:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+These tests cover preprocessing, folder discovery, score-table export with a
+fake scorer, and the missing Evo2 dependency message. Real Evo2 scoring still
+requires a Colab GPU runtime with `torch`, `flash-attn`, and `evo2` installed.
 
 ## Quick Start: Preprocessing Files
 

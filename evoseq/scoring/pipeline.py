@@ -211,7 +211,7 @@ def score_evo2_pairs(
 
     min_memory_gb = (
         RECOMMENDED_GPU_MEMORY_GB.get(model_name)
-        if require_recommended_gpu
+        if require_recommended_gpu and scorer is None
         else None
     )
     if min_memory_gb:

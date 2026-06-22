@@ -16,6 +16,19 @@ result_df, paths = score_pairs_file(
 By default, results are written to an `evoseq_scoring_output/` directory next to
 the pair table. Pass `output_dir` to choose a specific location.
 
+## Required Runtime
+
+Preprocessing does not require Evo2, PyTorch, or flash-attn. Real scoring does.
+In Colab, install the runtime dependencies before scoring:
+
+```bash
+pip uninstall -y torchvision
+pip install -q torch==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+pip install -q flash-attn==2.8.0.post2 --no-build-isolation
+pip install -q evo2
+pip install -e .
+```
+
 ## Colab GPU Checks
 
 The scoring step prints the detected GPU name, CUDA version, package versions,
