@@ -5,8 +5,12 @@ description = "Genome analysis toolkit powered by Evo"
 requires-python = ">=3.10"
 
 dependencies = [
+    "pandas>=2.2",
+    "numpy>=2.0",
+    "biopython>=1.85",
+]
+
+[project.optional-dependencies]
+evo2 = [
     "torch",
-    "transformers",
-    "biopython",
-    "numpy",
 ]
