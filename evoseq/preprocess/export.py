@@ -10,17 +10,21 @@ def sanitize_header_value(value):
     return str(value).replace(" ", "_").replace("\n", "_").replace("\t", "_")
 
 
+def get_row_value(row, name, default="NA"):
+    return getattr(row, name) if hasattr(row, name) else default
+
+
 def make_fasta_header(row, allele):
     seq_len = row.ref_len if allele == "ref" else row.mut_len
 
     fields = [
         row.id,
         f"allele={allele}",
-        f"gene={sanitize_header_value(row.gene)}",
-        f"variant={sanitize_header_value(row.variant)}",
-        f"hgvs={sanitize_header_value(row.hgvs)}",
-        f"ann={sanitize_header_value(row.annotation)}",
-        f"type={sanitize_header_value(row.variant_type)}",
+        f"gene={sanitize_header_value(get_row_value(row, 'gene'))}",
+        f"variant={sanitize_header_value(get_row_value(row, 'variant'))}",
+        f"hgvs={sanitize_header_value(get_row_value(row, 'hgvs'))}",
+        f"ann={sanitize_header_value(get_row_value(row, 'annotation'))}",
+        f"type={sanitize_header_value(get_row_value(row, 'variant_type'))}",
         f"len={seq_len}",
     ]
 
@@ -43,11 +47,13 @@ def export_evo2_input(evo_input_df, out_dir):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     pairs_path = out_dir / "evo2_pairs.tsv"
+    pair_path = out_dir / "evo2_pair.tsv"
     ref_path = out_dir / "evo2_reference.fa"
     mut_path = out_dir / "evo2_mutant.fa"
     all_path = out_dir / "evo2_all.fa"
 
     evo_input_df.to_csv(pairs_path, sep="\t", index=False)
+    evo_input_df.to_csv(pair_path, sep="\t", index=False)
 
     write_fasta_from_df(evo_input_df, ref_path, "ref")
     write_fasta_from_df(evo_input_df, mut_path, "mut")
@@ -64,7 +70,11 @@ def export_evo2_input(evo_input_df, out_dir):
 
     return {
         "pairs": pairs_path,
+        "pair_tsv": pair_path,
         "reference": ref_path,
+        "reference_fasta": ref_path,
         "mutant": mut_path,
+        "mutant_fasta": mut_path,
         "all": all_path,
+        "all_fasta": all_path,
     }

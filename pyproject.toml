@@ -8,9 +8,14 @@ dependencies = [
     "pandas>=2.2",
     "numpy>=2.0",
     "biopython>=1.85",
+    "tqdm>=4.66",
 ]
+
+[project.scripts]
+evoseq-run = "evoseq.cli:main"
 
 [project.optional-dependencies]
 evo2 = [
+    "evo2",
     "torch",
 ]

@@ -1,6 +1,3 @@
-import torch
-import torch.nn.functional as F
-
 from .evo2_model import tokenize_sequence
 
 
@@ -13,6 +10,9 @@ def per_token_logprob(model, seq, device="cuda:0"):
 
     if not seq:
         return []
+
+    import torch
+    import torch.nn.functional as F
 
     ids = tokenize_sequence(model, seq, device)
 

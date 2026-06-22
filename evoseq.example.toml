@@ -1,0 +1,22 @@
+[project]
+base_dir = "/content/drive/MyDrive/my_project/Model_7B_4096_POS"
+
+[preprocess]
+enabled = true
+dataset_type = "auto"
+window_size = 4096
+manifest_path = "auto"
+reference_fasta_path = ""
+mutant_fasta_path = ""
+strict_manifest = false
+progress = true
+
+[scoring]
+enabled = false
+model_name = "evo2_7b"
+device = "cuda:0"
+batch_size = 8
+manifest_path = "auto"
+local_path = ""
+require_recommended_gpu = true
+progress = true

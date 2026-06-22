@@ -35,7 +35,13 @@ def parse_fasta_id(record_id):
     parts = record_id.split("|")
 
     if len(parts) < 5:
-        raise ValueError(f"Unexpected FASTA ID format: {record_id}")
+        return {
+            "source": parts[0] if parts else "unknown",
+            "sample_from_id": parts[1] if len(parts) > 1 else "NA",
+            "gene": parts[2] if len(parts) > 2 else "NA",
+            "locus": parts[3] if len(parts) > 3 else "NA",
+            "variant": parts[4] if len(parts) > 4 else record_id,
+        }
 
     return {
         "source": parts[0],
