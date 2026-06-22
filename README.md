@@ -1,6 +1,6 @@
 # EvoSeq
 <p align="center">
-  <img src="docs/images/evoseq_banner.png" width="900">
+  <img src="doc/images/evoseq_banner.png" width="900">
 </p>
 EvoSeq is a small Colab-friendly toolkit for preparing paired reference/mutant
 FASTA files and scoring variants with Evo2.
