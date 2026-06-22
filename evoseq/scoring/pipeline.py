@@ -13,6 +13,7 @@ from .environment import (
     print_environment_info,
     write_environment_info,
 )
+from ..paths import default_output_dir, ensure_output_dir
 
 
 RECOMMENDED_GPU_MEMORY_GB = {
@@ -144,26 +145,42 @@ def _resolve_pairs_path(base_dir=None, pairs_path=None):
     return Path(base_dir) / "evo2_input" / "evo2_pairs.tsv"
 
 
-def _resolve_result_dir(base_dir=None, result_dir=None):
+def _resolve_result_dir(base_dir=None, pairs_path=None, result_dir=None):
     if result_dir:
         result_dir = Path(result_dir)
     elif base_dir:
-        result_dir = Path(base_dir) / "evo2_results"
+        result_dir = default_output_dir("scoring", base_dir=base_dir)
+    elif pairs_path:
+        result_dir = default_output_dir("scoring", pairs_path)
     else:
-        result_dir = Path("evo2_results")
-    result_dir.mkdir(parents=True, exist_ok=True)
-    return result_dir
+        result_dir = default_output_dir("scoring")
+    return ensure_output_dir(result_dir, fallback="/content/evoseq_scoring_output")
 
 
-def _resolve_manifest_path(base_dir=None, manifest_path="auto"):
+def _resolve_manifest_path(base_dir=None, pairs_path=None, manifest_path="auto"):
     if manifest_path in (None, False):
         return None
     if manifest_path != "auto":
         return Path(manifest_path)
-    if not base_dir:
-        return None
-    candidate = Path(base_dir) / "data" / "manifest.tsv"
-    return candidate if candidate.exists() else None
+
+    candidates = []
+    if pairs_path:
+        pairs_path = Path(pairs_path)
+        candidates.extend(
+            [
+                pairs_path.parent / "manifest.tsv",
+                pairs_path.parent.parent / "manifest.tsv",
+                pairs_path.parent.parent / "data" / "manifest.tsv",
+            ]
+        )
+    if base_dir:
+        base_dir = Path(base_dir)
+        candidates.extend([base_dir / "manifest.tsv", base_dir / "data" / "manifest.tsv"])
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
 
 
 def score_evo2_pairs(
@@ -181,8 +198,16 @@ def score_evo2_pairs(
     progress=True,
 ):
     pairs_path = _resolve_pairs_path(base_dir=base_dir, pairs_path=pairs_path)
-    result_dir = _resolve_result_dir(base_dir=base_dir, result_dir=result_dir)
-    manifest_path = _resolve_manifest_path(base_dir=base_dir, manifest_path=manifest_path)
+    result_dir = _resolve_result_dir(
+        base_dir=base_dir,
+        pairs_path=pairs_path,
+        result_dir=result_dir,
+    )
+    manifest_path = _resolve_manifest_path(
+        base_dir=base_dir,
+        pairs_path=pairs_path,
+        manifest_path=manifest_path,
+    )
 
     min_memory_gb = (
         RECOMMENDED_GPU_MEMORY_GB.get(model_name)
@@ -306,9 +331,42 @@ def score_evo2_pairs(
     }
 
 
+def score_pairs_file(
+    pairs_path,
+    output_dir=None,
+    manifest_path="auto",
+    model_name="evo2_7b",
+    device="cuda:0",
+    local_path=None,
+    batch_size=8,
+    scorer=None,
+    force_reload=False,
+    require_recommended_gpu=True,
+    progress=True,
+):
+    print("Running EvoSeq scoring from an explicit pair table.")
+    print(f"Pair table      : {pairs_path}")
+    print(f"Output directory: {output_dir or default_output_dir('scoring', pairs_path)}")
+
+    return score_evo2_pairs(
+        pairs_path=pairs_path,
+        result_dir=output_dir,
+        manifest_path=manifest_path,
+        model_name=model_name,
+        device=device,
+        local_path=local_path,
+        batch_size=batch_size,
+        scorer=scorer,
+        force_reload=force_reload,
+        require_recommended_gpu=require_recommended_gpu,
+        progress=progress,
+    )
+
+
 def export_perbase_logprobs(
     fasta_path,
-    output_path="perbase_logprobs.tsv",
+    output_path=None,
+    output_dir=None,
     model_name="evo2_7b",
     device="cuda:0",
     center=4096,
@@ -316,6 +374,26 @@ def export_perbase_logprobs(
     local_path=None,
     progress=True,
 ):
+    fasta_path = Path(fasta_path)
+    if output_path is None:
+        if output_dir is None:
+            output_dir = default_output_dir("perbase", fasta_path)
+        output_dir = ensure_output_dir(
+            output_dir,
+            fallback="/content/evoseq_perbase_output",
+        )
+        output_path = output_dir / "perbase_logprobs.tsv"
+    else:
+        output_path = Path(output_path)
+        ensure_output_dir(
+            output_path.parent,
+            fallback="/content/evoseq_perbase_output",
+        )
+
+    print("Running EvoSeq per-base log-probability export.")
+    print(f"Input FASTA      : {fasta_path}")
+    print(f"Output TSV       : {output_path}")
+
     model, device = load_evo2_model(
         model_name=model_name,
         device=device,
@@ -324,9 +402,14 @@ def export_perbase_logprobs(
 
     records = read_fasta(fasta_path)
     all_rows = []
+    env_info = collect_environment_info()
+    write_environment_info(output_path.parent / "environment_info.tsv", env_info)
 
     for tag, seq in _progress(records.items(), enabled=progress, desc="Per-base logprobs"):
-        base_tag, allele = tag.rsplit("__", 1)
+        if "__" in tag:
+            base_tag, allele = tag.rsplit("__", 1)
+        else:
+            base_tag, allele = tag, "unknown"
 
         per_token_results = per_token_logprob(
             model=model,
@@ -349,6 +432,25 @@ def export_perbase_logprobs(
 
     write_perbase_logprobs_tsv(all_rows, output_path)
 
+    report_path = output_path.parent / "perbase_report.tsv"
+    pd.DataFrame(
+        [
+            {
+                "fasta_path": str(fasta_path),
+                "output_path": str(output_path),
+                "model_name": model_name,
+                "local_path": str(local_path) if local_path else "",
+                "device": device,
+                "center": center,
+                "half_window": half_window,
+                "n_records": len(records),
+                "n_rows": len(all_rows),
+                "environment_info_path": str(output_path.parent / "environment_info.tsv"),
+            }
+        ]
+    ).to_csv(report_path, sep="\t", index=False)
+
     print(f"Wrote {output_path}")
+    print(f"Wrote {report_path}")
 
     return output_path

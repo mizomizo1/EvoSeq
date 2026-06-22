@@ -1,18 +1,20 @@
 # Evo2 Scoring
 
-`score_evo2_pairs` reads `evo2_input/evo2_pairs.tsv`, validates the sequences,
-loads one Evo2 model, scores reference and mutant windows, and exports delta
-scores.
+`score_pairs_file` reads an EvoSeq pair table, validates the sequences, loads one
+Evo2 model, scores reference and mutant windows, and exports delta scores.
 
 ```python
-from evoseq.scoring import score_evo2_pairs
+from evoseq.scoring import score_pairs_file
 
-result_df, paths = score_evo2_pairs(
-    base_dir="/content/drive/MyDrive/project/Model_7B_4096_POS",
+result_df, paths = score_pairs_file(
+    pairs_path="test/evoseq_preprocess_output/evo2_pairs.tsv",
     model_name="evo2_7b",
     batch_size=8,
 )
 ```
+
+By default, results are written to an `evoseq_scoring_output/` directory next to
+the pair table. Pass `output_dir` to choose a specific location.
 
 ## Colab GPU Checks
 

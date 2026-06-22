@@ -1,5 +1,5 @@
 [project]
-base_dir = "/content/drive/MyDrive/my_project/Model_7B_4096_POS"
+input_dir = "test"
 
 [preprocess]
 enabled = true
@@ -8,15 +8,29 @@ window_size = 4096
 manifest_path = "auto"
 reference_fasta_path = ""
 mutant_fasta_path = ""
+output_dir = ""
 strict_manifest = false
 progress = true
 
 [scoring]
 enabled = false
+pairs_path = ""
+output_dir = ""
 model_name = "evo2_7b"
 device = "cuda:0"
 batch_size = 8
 manifest_path = "auto"
 local_path = ""
 require_recommended_gpu = true
+progress = true
+
+[perbase]
+enabled = false
+fasta_path = "test/representative_perbase.fasta"
+output_dir = ""
+model_name = "evo2_7b"
+device = "cuda:0"
+center = 4096
+half_window = 320
+local_path = ""
 progress = true

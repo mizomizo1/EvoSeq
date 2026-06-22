@@ -1,8 +1,27 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "evoseq"
 version = "0.1.0"
 description = "Genome analysis toolkit powered by Evo"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Hideaki Mizoue" },
+]
 requires-python = ">=3.10"
+keywords = ["bioinformatics", "genomics", "evo2", "variant-scoring"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 
 dependencies = [
     "pandas>=2.2",
@@ -19,3 +38,11 @@ evo2 = [
     "evo2",
     "torch",
 ]
+
+[project.urls]
+Homepage = "https://github.com/hideakimizoue/EvoSeq"
+Repository = "https://github.com/hideakimizoue/EvoSeq"
+Issues = "https://github.com/hideakimizoue/EvoSeq/issues"
+
+[tool.setuptools.packages.find]
+include = ["evoseq*"]

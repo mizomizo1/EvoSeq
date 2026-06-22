@@ -12,34 +12,30 @@ files. A manifest is optional.
 - FASTA IDs with either the project format
   `source|sample|gene|locus|variant` or simpler arbitrary IDs
 
-## One Directory
-
-```python
-from evoseq.preprocess import preprocess_from_base_dir
-
-evo_df, paths = preprocess_from_base_dir(
-    "/content/drive/MyDrive/project/Model_7B_4096_POS",
-    dataset_type="auto",
-    window_size=4096,
-)
-```
-
-This searches `data/` for manifest and FASTA files, then writes `evo2_input/`.
-
 ## Explicit Files
 
 ```python
-from evoseq.preprocess import prepare_evo2_input
+from evoseq.preprocess import preprocess_files
 
-evo_df, paths = prepare_evo2_input(
-    manifest_path=None,
-    reference_fasta_path="data/evo2_neg_w16384_reference.fasta",
-    mutant_fasta_path="data/evo2_neg_w16384_mutant.fasta",
-    out_dir="evo2_input",
+evo_df, paths = preprocess_files(
+    reference_fasta_path="test/evo2_reference.fasta",
+    mutant_fasta_path="test/evo2_mutant.fasta",
+    manifest_path="auto",
 )
 ```
 
-Set `manifest_path="data/manifest.tsv"` when a manifest is available.
+This writes `test/evoseq_preprocess_output/` unless `output_dir` is provided.
+
+## Folder Discovery
+
+```python
+from evoseq.preprocess import preprocess_folder
+
+evo_df, paths = preprocess_folder("test")
+```
+
+This searches the folder and its `data/` child for manifest and FASTA files.
+Set `output_dir="outputs/preprocessing"` when you want a central output folder.
 
 ## Outputs
 
