@@ -47,7 +47,7 @@ GitHub Releases are a good first public distribution route.
 Users can install from GitHub directly:
 
 ```bash
-python -m pip install "git+https://github.com/hideakimizoue/EvoSeq.git@v0.1.0"
+python -m pip install "git+https://github.com/mizomizo1/EvoSeq.git@v0.1.0"
 ```
 
 ## PyPI

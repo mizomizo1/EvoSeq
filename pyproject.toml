@@ -40,9 +40,9 @@ evo2 = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/hideakimizoue/EvoSeq"
-Repository = "https://github.com/hideakimizoue/EvoSeq"
-Issues = "https://github.com/hideakimizoue/EvoSeq/issues"
+Homepage = "https://github.com/mizomizo1/EvoSeq"
+Repository = "https://github.com/mizomizo1/EvoSeq"
+Issues = "https://github.com/mizomizo1/EvoSeq/issues"
 
 [tool.setuptools.packages.find]
 include = ["evoseq*"]
