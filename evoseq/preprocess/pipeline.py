@@ -6,6 +6,7 @@ from .variant import compare_ref_mut, build_variant_table
 from .validation import validate_manifest_fasta_relationship, validate_sequences
 from .export import export_evo2_input
 from .discovery import discover_fasta_pair, discover_manifest, infer_dataset_type
+from ..paths import default_output_dir, ensure_output_dir
 
 
 def _progress(iterable, enabled=True, **kwargs):
@@ -20,19 +21,7 @@ def _progress(iterable, enabled=True, **kwargs):
 
 
 def prepare_output_dir(path):
-    path = Path(path)
-    try:
-        path.mkdir(parents=True, exist_ok=True)
-        test_path = path / ".write_test"
-        test_path.write_text("ok")
-        test_path.unlink(missing_ok=True)
-        return path
-    except OSError as exc:
-        fallback = Path("/content/evo2_input")
-        print(f"Warning: cannot use output directory {path} ({exc}).")
-        print(f"Using fallback output directory: {fallback}")
-        fallback.mkdir(parents=True, exist_ok=True)
-        return fallback
+    return ensure_output_dir(path, fallback="/content/evoseq_preprocess_output")
 
 
 def write_preprocessing_report(evo_input_df, output_paths, out_dir, manifest_path=None):
@@ -74,7 +63,7 @@ def prepare_evo2_input(
     manifest_path=None,
     reference_fasta_path=None,
     mutant_fasta_path=None,
-    out_dir="evo2_input",
+    out_dir=None,
     strict_manifest=True,
     progress=True,
 ):
@@ -83,6 +72,13 @@ def prepare_evo2_input(
 
     reference_fasta_path = Path(reference_fasta_path)
     mutant_fasta_path = Path(mutant_fasta_path)
+    if out_dir is None:
+        out_dir = default_output_dir(
+            "preprocess",
+            reference_fasta_path,
+            mutant_fasta_path,
+            manifest_path,
+        )
     out_dir = prepare_output_dir(out_dir)
 
     print("Preparing Evo2 input files.")
@@ -164,6 +160,41 @@ def prepare_evo2_input(
     return evo_input_df, output_paths
 
 
+def preprocess_files(
+    reference_fasta_path,
+    mutant_fasta_path,
+    manifest_path="auto",
+    output_dir=None,
+    strict_manifest=False,
+    progress=True,
+):
+    if manifest_path == "auto":
+        manifest_path = discover_manifest(
+            Path(reference_fasta_path).parent,
+            manifest_path="auto",
+        )
+
+    if output_dir is None:
+        output_dir = default_output_dir(
+            "preprocess",
+            reference_fasta_path,
+            mutant_fasta_path,
+            manifest_path,
+        )
+
+    print("Running EvoSeq preprocessing from explicit files.")
+    print(f"Output directory: {output_dir}")
+
+    return prepare_evo2_input(
+        reference_fasta_path=reference_fasta_path,
+        mutant_fasta_path=mutant_fasta_path,
+        manifest_path=manifest_path,
+        out_dir=output_dir,
+        strict_manifest=strict_manifest,
+        progress=progress,
+    )
+
+
 def preprocess_from_base_dir(
     base_dir,
     out_dir=None,
@@ -177,7 +208,7 @@ def preprocess_from_base_dir(
 ):
     base_dir = Path(base_dir)
     if out_dir is None:
-        out_dir = base_dir / "evo2_input"
+        out_dir = default_output_dir("preprocess", base_dir=base_dir)
 
     if dataset_type == "auto":
         dataset_type = infer_dataset_type(base_dir)
@@ -199,6 +230,30 @@ def preprocess_from_base_dir(
         mutant_fasta_path=mutant,
         manifest_path=manifest,
         out_dir=out_dir,
+        strict_manifest=strict_manifest,
+        progress=progress,
+    )
+
+
+def preprocess_folder(
+    input_dir,
+    output_dir=None,
+    manifest_path="auto",
+    reference_fasta_path=None,
+    mutant_fasta_path=None,
+    dataset_type="auto",
+    window_size=None,
+    strict_manifest=False,
+    progress=True,
+):
+    return preprocess_from_base_dir(
+        base_dir=input_dir,
+        out_dir=output_dir,
+        manifest_path=manifest_path,
+        reference_fasta_path=reference_fasta_path,
+        mutant_fasta_path=mutant_fasta_path,
+        dataset_type=dataset_type,
+        window_size=window_size,
         strict_manifest=strict_manifest,
         progress=progress,
     )
