@@ -24,7 +24,7 @@ pip install -e ".[evo2]"
 After a GitHub Release is tagged, users can install a specific version directly:
 
 ```bash
-pip install "git+https://github.com/hideakimizoue/EvoSeq.git@v0.1.0"
+pip install "git+https://github.com/mizomizo1/EvoSeq.git@v0.1.0"
 ```
 
 For Evo2 scoring in Colab, install Evo2 and GPU dependencies in the runtime that
