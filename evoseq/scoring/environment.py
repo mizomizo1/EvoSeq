@@ -2,6 +2,8 @@ from datetime import datetime
 import platform
 import sys
 
+# This module collects and reports information about the execution environment, including Python version,
+# platform details, and versions of key libraries like PyTorch, NumPy, Pandas, Biopython, and Evo2.
 
 def collect_environment_info():
     info = {
