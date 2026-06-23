@@ -27,11 +27,10 @@ In Google Colab, Evo2 often needs a runtime-specific install. Use this before
 scoring:
 
 ```bash
-pip uninstall -y torchvision
-pip install -q torch==2.7.1 --index-url https://download.pytorch.org/whl/cu128
-pip install -q flash-attn==2.8.0.post2 --no-build-isolation
-pip install -q evo2
-pip install -e .
+!pip uninstall -y torch torchvision torchaudio
+!pip install -q torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+!pip install -q flash-attn==2.8.0.post2 --no-build-isolation
+!pip install -q evo2
 ```
 
 After a GitHub Release is tagged, users can install a specific version directly:
